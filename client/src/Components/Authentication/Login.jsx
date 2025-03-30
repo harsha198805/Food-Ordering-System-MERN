@@ -84,27 +84,32 @@ export default function Login() {
         try {
             const response = await axios.post('http://localhost:5000/login', formData);
             const { userRole } = response.data;
+    
             console.log('Login successful', response.data);
-            console.log('User Role:', userRole); // Debugging role
-
+    
+            // Switch based on the user role
             switch (userRole) {
                 case 'admin':
-                    navigate('/admin/dashboard');
+                    navigate('/admin/dashboard'); // Redirect to Admin Dashboard
                     break;
                 case 'user':
-                    navigate('/createPost');
+                    navigate('/user/dashboard'); // Navigate to User Post Creation
+                    break;
+                case 'user':
+                    navigate('/user/dashboard'); // Navigate to User Post Creation
                     break;
                 default:
                     console.error('Unknown role');
                     setError('Invalid role');
             }
-
-            setError('');
+    
+            setError(''); // Reset error after a successful login
         } catch (err) {
             console.error('Login failed', err.response ? err.response.data.message : err);
             setError(err.response ? err.response.data.message : 'An error occurred');
         }
     };
+    
 
     return (
         <LoginContainer>
