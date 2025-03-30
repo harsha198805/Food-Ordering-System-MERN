@@ -95,8 +95,8 @@ export default function Login() {
                 case 'user':
                     navigate('/user/dashboard'); // Navigate to User Post Creation
                     break;
-                case 'user':
-                    navigate('/user/dashboard'); // Navigate to User Post Creation
+                case 'restaurant':
+                    navigate('/restaurant/dashboard'); // Navigate to User Post Creation
                     break;
                 default:
                     console.error('Unknown role');
