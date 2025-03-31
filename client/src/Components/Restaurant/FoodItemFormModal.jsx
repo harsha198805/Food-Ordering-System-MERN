@@ -110,9 +110,23 @@ const FoodItemFormModal = ({ fetchFoodItems, foodItem, open, onClose }) => {
           helperText={errors.category}
           margin="dense"
         >
-          <MenuItem value="Starter">Starter</MenuItem>
-          <MenuItem value="Main Course">Main Course</MenuItem>
-          <MenuItem value="Dessert">Dessert</MenuItem>
+        <MenuItem value="Rice and Curry">Rice and Curry</MenuItem>
+        <MenuItem value="Kottu">Kottu</MenuItem>
+        <MenuItem value="Hoppers">Hoppers</MenuItem>
+        <MenuItem value="String Hoppers">String Hoppers</MenuItem>
+        <MenuItem value="Pittu">Pittu</MenuItem>
+        <MenuItem value="Roti">Roti</MenuItem>
+        <MenuItem value="Seafood Dishes">Seafood Dishes</MenuItem>
+        <MenuItem value="Snacks">Snacks</MenuItem>
+        <MenuItem value="Sambol">Sambol</MenuItem>
+        <MenuItem value="Sweets">Sweets</MenuItem>
+        <MenuItem value="Beverages">Beverages</MenuItem>
+        <MenuItem value="Burger">Burger</MenuItem>
+        <MenuItem value="Pizza">Pizza</MenuItem>
+        <MenuItem value="Pasta">Pasta</MenuItem>
+        <MenuItem value="Fried Chicken">Fried Chicken</MenuItem>
+        <MenuItem value="Salads">Salads</MenuItem>
+        <MenuItem value="Desserts">Desserts</MenuItem>
         </TextField>
         <input
           type="file"

@@ -1,13 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import food1 from '../../assets/food1.jpg';
-import food2 from '../../assets/food2.jpg';
-import food3 from '../../assets/food3.jpg';
-import food4 from '../../assets/food4.jpg';
-import food5 from '../../assets/food5.jpg';
-import food6 from '../../assets/food6.jpg';
-import food7 from '../../assets/food7.jpg';
-import food8 from '../../assets/food8.jpg';
+import axios from 'axios';
 
 const HomePageContainer = styled.section`
   padding: 4rem 2rem;
@@ -20,6 +13,29 @@ const HomeTitle = styled.h2`
   color: #333;
   margin-bottom: 2rem;
   font-weight: bold;
+`;
+
+const FilterContainer = styled.div`
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+`;
+
+const FilterInput = styled.input`
+  padding: 0.8rem;
+  font-size: 1.1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  width: 250px;
+`;
+
+const FilterSelect = styled.select`
+  padding: 0.8rem;
+  font-size: 1.1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  width: 250px;
 `;
 
 const FoodGrid = styled.div`
@@ -81,62 +97,82 @@ const OrderButton = styled.button`
 `;
 
 const ItemPage = () => {
+  const [foodItems, setFoodItems] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Fetch data from the backend
+  useEffect(() => {
+    const fetchFoodItems = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/food-items');
+        setFoodItems(response.data);
+      } catch (error) {
+        console.error('Error fetching food items:', error);
+      }
+    };
+    
+    fetchFoodItems();
+  }, []);
+
   const handleOrderClick = (itemName) => {
     alert(`${itemName} has been added to your order.`);
   };
 
+  // Filter the items based on category and search term
+  const filteredItems = foodItems.filter(item => {
+    return (
+      (categoryFilter === "" || item.category === categoryFilter) &&
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
   return (
     <HomePageContainer>
       <HomeTitle>Popular Dishes</HomeTitle>
+
+      {/* Filters */}
+      <FilterContainer>
+        <FilterSelect value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <option value="">All Categories</option>
+          <option value="Kottu">Kottu</option>
+          <option value="Hoppers">Hoppers</option>
+          <option value="String Hoppers">String Hoppers</option>
+          <option value="Pittu">Pittu</option>
+          <option value="Roti">Roti</option>
+          <option value="Seafood Dishes">Seafood Dishes</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Sambol">Sambol</option>
+          <option value="Sweets">Sweets</option>
+          <option value="Beverages">Beverages</option>
+          <option value="Burger">Burger</option>
+          <option value="Pizza">Pizza</option>
+          <option value="Pasta">Pasta</option>
+          <option value="Fried Chicken">Fried Chicken</option>
+          <option value="Salads">Salads</option>
+          <option value="Desserts">Desserts</option>
+          <option value="Rice and Curry">Rice and Curry</option>
+        </FilterSelect>
+
+        <FilterInput
+          type="text"
+          placeholder="Search by item name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </FilterContainer>
+
+      {/* Food Items Grid */}
       <FoodGrid>
-        <FoodItem>
-          <FoodImage src={food1} alt="Gourmet Burger" />
-          <FoodName>Gourmet Burger</FoodName>
-          <Price>$12.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Gourmet Burger")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food2} alt="Fresh Salad" />
-          <FoodName>Fresh Salad</FoodName>
-          <Price>$8.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Fresh Salad")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food3} alt="Pizza Margherita" />
-          <FoodName>Pizza Margherita</FoodName>
-          <Price>$14.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Pizza Margherita")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food4} alt="Sushi Platter" />
-          <FoodName>Sushi Platter</FoodName>
-          <Price>$22.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Sushi Platter")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food5} alt="Pasta Bolognese" />
-          <FoodName>Pasta Bolognese</FoodName>
-          <Price>$13.49</Price>
-          <OrderButton onClick={() => handleOrderClick("Pasta Bolognese")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food6} alt="Ice Cream Sundae" />
-          <FoodName>Ice Cream Sundae</FoodName>
-          <Price>$6.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Ice Cream Sundae")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food7} alt="Veggie Burger" />
-          <FoodName>Veggie Burger</FoodName>
-          <Price>$11.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Veggie Burger")}>Order Now</OrderButton>
-        </FoodItem>
-        <FoodItem>
-          <FoodImage src={food8} alt="Grilled Chicken" />
-          <FoodName>Grilled Chicken</FoodName>
-          <Price>$15.99</Price>
-          <OrderButton onClick={() => handleOrderClick("Grilled Chicken")}>Order Now</OrderButton>
-        </FoodItem>
+        {filteredItems.map(item => (
+          <FoodItem key={item._id}>
+            {/* Display the image from the backend */}
+            <FoodImage src={`http://localhost:5000${item.image}`} alt={item.name} />
+            <FoodName>{item.name}</FoodName>
+            <Price>${item.price}</Price>
+            <OrderButton onClick={() => handleOrderClick(item.name)}>Order Now</OrderButton>
+          </FoodItem>
+        ))}
       </FoodGrid>
     </HomePageContainer>
   );
