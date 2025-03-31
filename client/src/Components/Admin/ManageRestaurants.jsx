@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Slider } from '@mui/material';
+import { Container, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormHelperText } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import axios from 'axios';
 import styled from 'styled-components';
+
+const StyledContainer = styled(Container)`
+  background-color: #f4f4f4;
+  padding: 2rem;
+  border-radius: 10px;
+`;
+
+const StyledTypography = styled(Typography)`
+  color: #e53e29;
+  text-align: center;
+  margin-bottom: 2rem;
+`;
 
 const StyledButton = styled(Button)`
   background-color: #e53e29;
@@ -22,18 +34,27 @@ const StyledTableCell = styled(TableCell)`
 
 const ManageRestaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
-  const [open, setOpen] = useState(false); // For add/edit form dialog
-  const [editMode, setEditMode] = useState(false); // Track if we're editing or adding
-  const [selectedRestaurant, setSelectedRestaurant] = useState(null); // For the selected restaurant in edit
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    location: '', 
-    cuisine: '', 
-    email: '', 
-    password: '', 
-    phone: '', 
-    address: '',
-    rating: 3,  // Added default rating value
+  const [open, setOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    location: '',
+    cuisine: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: ''
+  });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    location: '',
+    cuisine: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: ''
   });
 
   useEffect(() => {
@@ -52,20 +73,32 @@ const ManageRestaurants = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
-    setEditMode(false); // Reset edit mode
-    setFormData({ name: '', location: '', cuisine: '', email: '', password: '', phone: '', address: '', rating: 3 });
+    setEditMode(false);
+    setFormData({ name: '', location: '', cuisine: '', email: '', password: '', phone: '', address: '' });
     setSelectedRestaurant(null);
+    setErrors({});
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSliderChange = (event, newValue) => {
-    setFormData({ ...formData, rating: newValue });
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.location) newErrors.location = 'Location is required';
+    if (!formData.cuisine) newErrors.cuisine = 'Cuisine is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!formData.phone) newErrors.phone = 'Phone is required';
+    if (!formData.address) newErrors.address = 'Address is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Returns true if no errors
   };
 
   const handleSubmit = async () => {
+    if (!validateForm()) return; // Stop if form is invalid
     try {
       if (editMode) {
         await axios.put(`http://localhost:5000/restaurants/${selectedRestaurant._id}`, formData);
@@ -82,15 +115,14 @@ const ManageRestaurants = () => {
   const handleEdit = (restaurant) => {
     setEditMode(true);
     setSelectedRestaurant(restaurant);
-    setFormData({ 
-      name: restaurant.name, 
-      location: restaurant.location, 
+    setFormData({
+      name: restaurant.name,
+      location: restaurant.location,
       cuisine: restaurant.cuisine,
-      email: restaurant.email || '', 
-      password: '', // Don't pre-fill password
+      email: restaurant.email || '',
+      password: '',
       phone: restaurant.phone || '',
-      address: restaurant.address || '',
-      rating: restaurant.rating || 3, 
+      address: restaurant.address || ''
     });
     handleOpen();
   };
@@ -105,8 +137,10 @@ const ManageRestaurants = () => {
   };
 
   return (
-    <Container>
-      <Typography variant="h5" gutterBottom>Manage Restaurants</Typography>
+    <StyledContainer>
+      <StyledTypography variant="h4" gutterBottom>
+        Manage Restaurants
+      </StyledTypography>
 
       <StyledButton
         variant="contained"
@@ -158,6 +192,7 @@ const ManageRestaurants = () => {
         </Table>
       </StyledTableContainer>
 
+      {/* Dialog for Add/Edit */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{editMode ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
         <DialogContent>
@@ -169,6 +204,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.name}
             onChange={handleChange}
+            error={!!errors.name}
+            helperText={errors.name}
           />
           <TextField
             margin="dense"
@@ -177,6 +214,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.location}
             onChange={handleChange}
+            error={!!errors.location}
+            helperText={errors.location}
           />
           <TextField
             margin="dense"
@@ -185,6 +224,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.cuisine}
             onChange={handleChange}
+            error={!!errors.cuisine}
+            helperText={errors.cuisine}
           />
           <TextField
             margin="dense"
@@ -193,6 +234,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.email}
             onChange={handleChange}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           <TextField
             margin="dense"
@@ -201,6 +244,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.phone}
             onChange={handleChange}
+            error={!!errors.phone}
+            helperText={errors.phone}
           />
           <TextField
             margin="dense"
@@ -209,6 +254,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.address}
             onChange={handleChange}
+            error={!!errors.address}
+            helperText={errors.address}
           />
           <TextField
             margin="dense"
@@ -218,16 +265,8 @@ const ManageRestaurants = () => {
             fullWidth
             value={formData.password}
             onChange={handleChange}
-          />
-          <Typography gutterBottom>Restaurant Rating</Typography>
-          <Slider
-            value={formData.rating}
-            onChange={handleSliderChange}
-            aria-labelledby="rating-slider"
-            valueLabelDisplay="auto"
-            step={1}
-            min={1}
-            max={5}
+            error={!!errors.password}
+            helperText={errors.password}
           />
         </DialogContent>
         <DialogActions>
@@ -235,7 +274,7 @@ const ManageRestaurants = () => {
           <Button onClick={handleSubmit} color="primary">{editMode ? 'Update' : 'Add'}</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </StyledContainer>
   );
 };
 
