@@ -30,6 +30,9 @@ import AdminRoute from './Components/Admin/AdminRoute';
 import ManageRestaurants from './Components/Admin/ManageRestaurants';
 import ManageOrders from './Components/Admin/ManageOrders';
 import ManageUsers from './Components/Admin/ManageUsers';
+import FoodItemTable from './Components/Restaurant/FoodItemTable';
+import RestaurantDashboard from './Components/Restaurant/RestaurantDashboard';
+
 
 function App() {
   return (
@@ -55,6 +58,8 @@ function App() {
           <Route path="/admin/restaurants" element={<ManageRestaurants />} />
           <Route path="/admin/orders" element={<ManageOrders />} />
           <Route path="/admin/users" element={<ManageUsers />} />
+          <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/food-items" element={<FoodItemTable />} />
         </Routes>
 
         <Footer />

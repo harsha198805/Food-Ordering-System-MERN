@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const connectDB = require('./Database/Connect');
+const path = require('path'); 
 
 const postMessageRoute = require('./routes/postmessage.route');
 const getMessageRoute = require('./routes/getmessage.route');
@@ -19,6 +20,8 @@ const getUserMessageRoute = require('./routes/getmessageofuser.route.js');
 
 const restaurantRoute = require('./routes/admin/restaurant.route');
 const adminRoute = require('./routes/admin.route'); // Import the admin route
+
+const foodItemRoute = require('./routes/admin/fooditem.route'); 
 
 
 require('dotenv').config();
@@ -51,5 +54,7 @@ app.use('/get-message-authenticate',getMessageAuthenticateRoute);
 app.use('/user-message',getUserMessageRoute);
 
 app.use('/restaurants', restaurantRoute);
+app.use('/food-items', foodItemRoute);
 
 app.use('/admin', adminRoute);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
