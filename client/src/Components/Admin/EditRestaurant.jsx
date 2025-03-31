@@ -36,7 +36,11 @@ export default function EditRestaurant() {
         name: '',
         location: '',
         description: '',
-        menu: ''
+        menu: '',
+        email: '',
+        password: '',
+        phone: '',
+        address: ''
     });
     const [error, setError] = useState('');
 
@@ -104,6 +108,37 @@ export default function EditRestaurant() {
                     type="text"
                     name="menu"
                     value={restaurant.menu}
+                    onChange={handleChange}
+                />
+                <label>Email:</label>
+                <Input
+                    type="email"
+                    name="email"
+                    value={restaurant.email}
+                    onChange={handleChange}
+                    required
+                />
+                <label>Password:</label>
+                <Input
+                    type="password"
+                    name="password"
+                    value={restaurant.password}
+                    onChange={handleChange}
+                    required
+                />
+                <label>Phone:</label>
+                <Input
+                    type="tel"
+                    name="phone"
+                    value={restaurant.phone}
+                    onChange={handleChange}
+                    required
+                />
+                <label>Address:</label>
+                <Input
+                    type="text"
+                    name="address"
+                    value={restaurant.address}
                     onChange={handleChange}
                 />
                 <Button type="submit">Update Restaurant</Button>

@@ -1,165 +1,158 @@
-import React, { useState, useEffect } from 'react';
-import { 
-    Container, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, TextField 
-} from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
-import axios from 'axios';
+import React from 'react';
+import { Route, Routes, Link, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+import ManageRestaurants from './ManageRestaurants'; // Your manage restaurants component
+import ManageOrders from './ManageOrders'; // Your manage orders component
+import ManageUsers from './ManageUsers'; // Example manage users component
 
-export default function AdminDashboard() {
-    const [restaurants, setRestaurants] = useState([]);
-    const [open, setOpen] = useState(false); // For add/edit form dialog
-    const [editMode, setEditMode] = useState(false); // Track if we're editing or adding
-    const [selectedRestaurant, setSelectedRestaurant] = useState(null); // For the selected restaurant in edit
-    const [formData, setFormData] = useState({ name: '', location: '', cuisine: '' });
+// Sidebar and Main Layout Components
+const DashboardContainer = styled.div`
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f4f4;
+  flex-direction: column;
 
-    // Fetch restaurants when component loads
-    useEffect(() => {
-        fetchRestaurants();
-    }, []);
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
+`;
 
-    const fetchRestaurants = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/restaurants'); // Adjust backend URL
-            setRestaurants(response.data);
-        } catch (err) {
-            console.error('Error fetching restaurants:', err);
-        }
-    };
+const Sidebar = styled.div`
+  width: 240px;
+  background-color: #fff;
+  box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  position: sticky;
+  top: 0;
 
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => {
-        setOpen(false);
-        setEditMode(false); // Reset edit mode
-        setFormData({ name: '', location: '', cuisine: '' });
-        setSelectedRestaurant(null);
-    };
+  @media (max-width: 768px) {
+    width: 100%;
+    position: relative;
+  }
+`;
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+const SidebarItem = styled(Link)`
+  display: block;
+  color: #333;
+  text-decoration: none;
+  padding: 1rem;
+  font-size: 1.1rem;
+  border-radius: 5px;
+  margin-bottom: 0.8rem;
+  background-color: ${({ isActive }) => (isActive ? '#e53e29' : 'transparent')};
+  color: ${({ isActive }) => (isActive ? 'white' : '#333')};
 
-    const handleSubmit = async () => {
-        try {
-            if (editMode) {
-                // Update existing restaurant
-                await axios.put(`http://localhost:5000/restaurants/${selectedRestaurant._id}`, formData);
-            } else {
-                // Create new restaurant
-                await axios.post('http://localhost:5000/restaurants', formData);
-            }
-            fetchRestaurants();
-            handleClose();
-        } catch (err) {
-            console.error('Error saving restaurant:', err);
-        }
-    };
+  &:hover {
+    background-color: #e53e29;
+    color: white;
+  }
+`;
 
-    const handleEdit = (restaurant) => {
-        setEditMode(true);
-        setSelectedRestaurant(restaurant);
-        setFormData({ name: restaurant.name, location: restaurant.location, cuisine: restaurant.cuisine });
-        handleOpen();
-    };
+const MainContent = styled.div`
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: #fff;
+  box-shadow: -2px 0px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/restaurants/${id}`);
-            fetchRestaurants();
-        } catch (err) {
-            console.error('Error deleting restaurant:', err);
-        }
-    };
+  @media (max-width: 768px) {
+    margin-top: 0;
+  }
+`;
 
-    return (
-        <Container>
-            <Typography variant="h4" align="center" gutterBottom>
-                Manage Restaurants
-            </Typography>
+const Header = styled.div`
+  padding: 1rem;
+  background-color: #e53e29;
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+`;
 
-            <Button
-                variant="contained"
-                color="primary"
-                startIcon={<Add />}
-                onClick={handleOpen}
-                sx={{ mb: 3 }}
-            >
-                Add Restaurant
-            </Button>
+const TabContent = styled.div`
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
 
-            {/* Restaurant Table */}
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Location</TableCell>
-                            <TableCell>Cuisine</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {restaurants.map((restaurant) => (
-                            <TableRow key={restaurant._id}>
-                                <TableCell>{restaurant.name}</TableCell>
-                                <TableCell>{restaurant.location}</TableCell>
-                                <TableCell>{restaurant.cuisine}</TableCell>
-                                <TableCell>
-                                    <Button 
-                                        color="primary" 
-                                        startIcon={<Edit />} 
-                                        onClick={() => handleEdit(restaurant)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button 
-                                        color="secondary" 
-                                        startIcon={<Delete />} 
-                                        onClick={() => handleDelete(restaurant._id)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+const OverviewCard = styled.div`
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+`;
 
-            {/* Dialog for Add/Edit */}
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>{editMode ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Name"
-                        name="name"
-                        fullWidth
-                        value={formData.name}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Location"
-                        name="location"
-                        fullWidth
-                        value={formData.location}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Cuisine"
-                        name="cuisine"
-                        fullWidth
-                        value={formData.cuisine}
-                        onChange={handleChange}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="secondary">Cancel</Button>
-                    <Button onClick={handleSubmit} color="primary">{editMode ? 'Update' : 'Add'}</Button>
-                </DialogActions>
-            </Dialog>
-        </Container>
-    );
-}
+const OverviewTitle = styled.h3`
+  color: #333;
+`;
+
+const OverviewValue = styled.p`
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #e53e29;
+`;
+
+const AdminDashboard = () => {
+  const location = useLocation();
+
+  return (
+    <DashboardContainer>
+      {/* Sidebar */}
+      <Sidebar>
+        <SidebarItem
+          to="/admin/restaurants"
+          isActive={location.pathname === '/admin/restaurants'}
+        >
+          Manage Restaurants
+        </SidebarItem>
+        <SidebarItem
+          to="/admin/orders"
+          isActive={location.pathname === '/admin/orders'}
+        >
+          Manage Orders
+        </SidebarItem>
+        <SidebarItem
+          to="/admin/users"
+          isActive={location.pathname === '/admin/users'}
+        >
+          Manage Users
+        </SidebarItem>
+      </Sidebar>
+
+      {/* Main Content */}
+      <MainContent>
+        <Header>Admin Dashboard</Header>
+
+        {/* Overview Section */}
+        <TabContent>
+          <OverviewCard>
+            <OverviewTitle>Total Restaurants</OverviewTitle>
+            <OverviewValue>120</OverviewValue>
+          </OverviewCard>
+          <OverviewCard>
+            <OverviewTitle>Total Orders</OverviewTitle>
+            <OverviewValue>350</OverviewValue>
+          </OverviewCard>
+          <OverviewCard>
+            <OverviewTitle>Total Users</OverviewTitle>
+            <OverviewValue>1500</OverviewValue>
+          </OverviewCard>
+
+          {/* Routes for individual sections */}
+          <Routes>
+            <Route path="/admin/restaurants" element={<ManageRestaurants />} />
+            <Route path="/admin/orders" element={<ManageOrders />} />
+            <Route path="/admin/users" element={<ManageUsers />} />
+          </Routes>
+        </TabContent>
+      </MainContent>
+    </DashboardContainer>
+  );
+};
+
+export default AdminDashboard;

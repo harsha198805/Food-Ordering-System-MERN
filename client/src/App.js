@@ -27,34 +27,38 @@ import LandingPage from './Components/Pages/LandingPage';
 import AboutUs from './Components/Pages/AboutUs';
 import AdminDashboard from './Components/Admin/AdminDashboard';
 import AdminRoute from './Components/Admin/AdminRoute';
-
-
+import ManageRestaurants from './Components/Admin/ManageRestaurants';
+import ManageOrders from './Components/Admin/ManageOrders';
+import ManageUsers from './Components/Admin/ManageUsers';
 
 function App() {
   return (
     <div className="App">
-    
-    <Router>
-<Navigation />
+      <Router> {/* Router at the root level only */}
+        <Navigation /> {/* This component should NOT contain another <Router> */}
 
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/usenavigate" element={<UseNavigatePage />} />
-        <Route path="/params/:id" element={<ParamsPage />} />
-        <Route path="/more-info" element={<MoreInfo />}>
-          <Route path="about-us" element={<AboutUs />} />
-          <Route path="contact-us" element={<ContactUs />} /> 
-        </Route>
-        <Route path="/admin/*" element={<AdminRoute />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-        </Route>
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      </Routes>
-      <Footer />
-    </Router>
-      
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/usenavigate" element={<UseNavigatePage />} />
+          <Route path="/params/:id" element={<ParamsPage />} />
+          <Route path="/more-info" element={<MoreInfo />}>
+            <Route path="about-us" element={<AboutUs />} />
+            <Route path="contact-us" element={<ContactUs />} />
+          </Route>
+          {/* AdminRoute should not use <Router> again */}
+          <Route path="/admin/*" element={<AdminRoute />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+          </Route>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/restaurants" element={<ManageRestaurants />} />
+          <Route path="/admin/orders" element={<ManageOrders />} />
+          <Route path="/admin/users" element={<ManageUsers />} />
+        </Routes>
+
+        <Footer />
+      </Router>
     </div>
   );
 }

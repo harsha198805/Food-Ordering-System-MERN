@@ -25,10 +25,21 @@ router.get('/:id', async (req, res) => {
 
 // Create a new restaurant
 router.post('/', async (req, res) => {
+    const { name, location, cuisine, email, password, phone, address } = req.body;
+
+    // Validation check for required fields
+    if (!name || !location || !cuisine || !email || !password || !phone || !address) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
     const restaurant = new Restaurant({
-        name: req.body.name,
-        location: req.body.location,
-        cuisine: req.body.cuisine
+        name,
+        location,
+        cuisine,
+        email,
+        password, // You may want to hash the password before saving it
+        phone,
+        address
     });
 
     try {
@@ -48,6 +59,10 @@ router.put('/:id', async (req, res) => {
         restaurant.name = req.body.name || restaurant.name;
         restaurant.location = req.body.location || restaurant.location;
         restaurant.cuisine = req.body.cuisine || restaurant.cuisine;
+        restaurant.email = req.body.email || restaurant.email;
+        restaurant.password = req.body.password || restaurant.password; // You may want to hash the password before saving it
+        restaurant.phone = req.body.phone || restaurant.phone;
+        restaurant.address = req.body.address || restaurant.address;
 
         const updatedRestaurant = await restaurant.save();
         res.json(updatedRestaurant);
@@ -62,7 +77,7 @@ router.delete('/:id', async (req, res) => {
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
 
-        await restaurant.deleteOne(); // Use deleteOne instead of remove
+        await restaurant.deleteOne();
         res.json({ message: 'Restaurant deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
