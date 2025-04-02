@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import axios from 'axios';
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const HomePageContainer = styled.section`
   padding: 4rem 2rem;
@@ -19,12 +20,12 @@ const FilterContainer = styled.div`
   margin-bottom: 2rem;
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  gap: 1rem;
 `;
 
 const FilterInput = styled.input`
   padding: 0.8rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
   border: 2px solid #ddd;
   border-radius: 8px;
   width: 250px;
@@ -32,7 +33,7 @@ const FilterInput = styled.input`
 
 const FilterSelect = styled.select`
   padding: 0.8rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
   border: 2px solid #ddd;
   border-radius: 8px;
   width: 250px;
@@ -40,92 +41,127 @@ const FilterSelect = styled.select`
 
 const FoodGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  justify-items: center;
+  grid-template-columns: repeat(4, 1fr);  /* 4 columns */
+  gap: 1.5rem;
 `;
 
 const FoodItem = styled.div`
-  background-color: #ffffff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 320px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  }
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
 `;
 
 const FoodImage = styled.img`
   width: 100%;
-  height: auto;
-  border-radius: 10px;
+  max-height: 180px;
   object-fit: cover;
-  max-height: 200px;
-`;
-
-const FoodName = styled.h3`
-  font-size: 1.6rem;
-  margin-top: 1rem;
-  color: #333;
-`;
-
-const Price = styled.p`
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: #ff6347;
-  margin: 1rem 0;
+  border-radius: 8px;
 `;
 
 const OrderButton = styled.button`
   background-color: #ff6347;
   color: white;
-  padding: 0.8rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1.1rem;
-  transition: background-color 0.3s, transform 0.2s;
+  font-size: 1rem;
+  margin-top: 10px;
 
   &:hover {
     background-color: #e5533a;
-    transform: scale(1.05);
+  }
+`;
+
+const CartContainer = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 300px;
+`;
+
+const CartItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const NoResultsMessage = styled.p`
+  color: red;
+  font-size: 1.2rem;
+  font-weight: bold;
+  align-items: center;
+`;
+
+const CheckoutButton = styled.button`
+  background-color: #ff6347;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #e5533a;
   }
 `;
 
 const ItemPage = () => {
   const [foodItems, setFoodItems] = useState([]);
+  const [cart, setCart] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch data from the backend
   useEffect(() => {
     const fetchFoodItems = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/food-items');
+        const response = await axios.get("http://localhost:5000/food-items");
         setFoodItems(response.data);
       } catch (error) {
-        console.error('Error fetching food items:', error);
+        console.error("Error fetching food items:", error);
       }
     };
-    
+
     fetchFoodItems();
   }, []);
 
-  const handleOrderClick = (itemName) => {
-    alert(`${itemName} has been added to your order.`);
+  const addToCart = (item) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((cartItem) => cartItem._id === item._id);
+      if (existingItem) {
+        return prevCart.map((cartItem) =>
+          cartItem._id === item._id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+        );
+      } else {
+        return [...prevCart, { ...item, quantity: 1 }];
+      }
+    });
   };
 
-  // Filter the items based on category and search term
-  const filteredItems = foodItems.filter(item => {
-    return (
-      (categoryFilter === "" || item.category === categoryFilter) &&
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const removeFromCart = (itemId) => {
+    setCart((prevCart) => prevCart.filter((item) => item._id !== itemId));
+  };
+
+  const filteredItems = foodItems.filter((item) => {
+    const matchesCategory = categoryFilter === "" || item.category === categoryFilter;
+    const matchesSearchTerm = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearchTerm;
   });
+
+  const navigate = useNavigate();
+const goToCheckout = () => {
+  // Navigate to the Checkout page, passing the cart as state
+  navigate("/checkout", { state: { cart } });
+};
 
   return (
     <HomePageContainer>
@@ -162,17 +198,37 @@ const ItemPage = () => {
         />
       </FilterContainer>
 
+      {/* Cart Section */}
+      <CartContainer>
+        <h3>Cart</h3>
+        {cart.length > 0 ? (
+          cart.map((item) => (
+            <CartItem key={item._id}>
+              <span>{item.name} ({item.quantity})</span>
+              <button onClick={() => removeFromCart(item._id)}>Remove</button>
+            </CartItem>
+          ))
+        ) : (
+          <p>Cart is empty</p>
+        )}
+
+<CheckoutButton onClick={goToCheckout}>Proceed to Checkout</CheckoutButton>
+      </CartContainer>
+
       {/* Food Items Grid */}
       <FoodGrid>
-        {filteredItems.map(item => (
-          <FoodItem key={item._id}>
-            {/* Display the image from the backend */}
-            <FoodImage src={`http://localhost:5000${item.image}`} alt={item.name} />
-            <FoodName>{item.name}</FoodName>
-            <Price>${item.price}</Price>
-            <OrderButton onClick={() => handleOrderClick(item.name)}>Order Now</OrderButton>
-          </FoodItem>
-        ))}
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => (
+            <FoodItem key={item._id}>
+              <FoodImage src={`http://localhost:5000${item.image}`} alt={item.name} />
+              <h3>{item.name}</h3>
+              <p>${item.price}</p>
+              <OrderButton onClick={() => addToCart(item)}>Add to Cart</OrderButton>
+            </FoodItem>
+          ))
+        ) : (
+          <NoResultsMessage>No food items found matching your criteria.</NoResultsMessage>
+        )}
       </FoodGrid>
     </HomePageContainer>
   );

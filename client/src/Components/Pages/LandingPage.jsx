@@ -11,7 +11,6 @@ const LandingPage = () => {
         <HeroContent>
           <HeroTitle>Welcome to Foodie</HeroTitle>
           <HeroText>Order your favorite food from local restaurants and have it delivered right to your doorstep!</HeroText>
-          <HeroButton>Order Now</HeroButton>
         </HeroContent>
       </HeroSectionContainer>
       <ItemPage />
