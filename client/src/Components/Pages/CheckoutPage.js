@@ -1,4 +1,3 @@
-// CheckoutPage.js
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
@@ -52,12 +51,6 @@ const CartItemImage = styled.img`
   border-radius: 5px;
 `;
 
-const CartItemActions = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
 const CartItemQuantity = styled.input`
   width: 40px;
   margin: 0 10px;
@@ -85,6 +78,15 @@ const CheckoutPage = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState(location.state?.cart || []);
+
+  // Check if the user is logged in
+  const isLoggedIn = localStorage.getItem("authToken");  // Example using localStorage to check if the user is logged in
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/register");  // Redirect to register page if user is not logged in
+    }
+  }, [isLoggedIn, navigate]);
 
   // Update item quantity
   const updateQuantity = (itemId, newQuantity) => {

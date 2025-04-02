@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios"; // Make sure Axios is installed
 
 const RegistrationContainer = styled.div`
   display: flex;
@@ -53,7 +54,6 @@ const Heading = styled.h2`
 `;
 
 const RegistrationPage = () => {
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,7 +83,7 @@ const RegistrationPage = () => {
     setConfirmPassword(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (name === "" || email === "" || password === "" || confirmPassword === "") {
       setError("All fields are required");
@@ -94,7 +94,23 @@ const RegistrationPage = () => {
       return;
     }
     setError("");
-    alert(`Registration successful with email: ${email}`);
+
+    try {
+      // Send the registration data to the backend
+      const response = await axios.post("http://localhost:5000/register", {
+        name,
+        email,
+        password,
+      });
+
+      if (response.data.msg === "User registered successfully") {
+        alert(`Registration successful with email: ${email}`);
+        // Redirect to login or homepage if necessary
+      }
+    } catch (err) {
+      console.error("Error registering user:", err.response ? err.response.data : err);
+      setError("Registration failed, please try again");
+    }
   };
 
   return (

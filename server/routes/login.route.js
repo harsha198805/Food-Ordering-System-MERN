@@ -1,47 +1,43 @@
 const express = require('express');
-const User = require('../Database/models/user'); // Import your User model
+const jwt = require('jsonwebtoken'); // Import JWT
+const User = require('../Database/models/user'); // User model
 const bcrypt = require('bcrypt');
 const router = express.Router();
-
+const SECRET_KEY = process.env.SECRET_KEY; 
 router.post('/', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check if a user exists with the given email
+        // Check if the user exists
         const user = await User.findOne({ email });
-
         if (!user) {
-            return res.status(400).json({
-                status: 'failed',
-                message: 'Invalid email'
-            });
+            return res.status(400).json({ status: 'failed', message: 'Invalid email' });
         }
 
-        // Check if the input password is correct
+        // Validate password
         const isPasswordValid = await bcrypt.compare(password, user.password);
-
         if (!isPasswordValid) {
-            return res.status(400).json({
-                status: 'failed',
-                message: 'Invalid password'
-            });
+            return res.status(400).json({ status: 'failed', message: 'Invalid password' });
         }
-        
-        // Send a success response with user role
+
+        // Generate JWT Token
+        const authToken = jwt.sign(
+            { userId: user._id, role: user.role },
+            SECRET_KEY,
+            { expiresIn: '1h' } // Token valid for 1 hour
+        );
+
+        // Send success response with the token
         res.status(200).json({
             status: 'success',
             message: 'Login successful',
-            userRole: user.role  // Assuming your User model has a `role` field
+            authToken,  // Include authToken in the response
+            userRole: user.role
         });
 
     } catch (err) {
         console.error(err);
-
-        // Send a failed response
-        res.status(500).json({
-            status: 'failed',
-            message: 'An error occurred while processing your request'
-        });
+        res.status(500).json({ status: 'failed', message: 'An error occurred' });
     }
 });
 

@@ -83,32 +83,42 @@ export default function Login() {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/login', formData);
-            const { userRole } = response.data;
+            
+            console.log('Server Response:', response.data); // Debugging line
     
-            console.log('Login successful', response.data);
+            const { authToken, userRole } = response.data;
     
-            // Switch based on the user role
+            if (!authToken) {
+                console.error('authToken is missing from response');
+                setError('Authentication failed. Please try again.');
+                return;
+            }
+    
+            // Store the token and user role in localStorage
+            localStorage.setItem('authToken', authToken);
+            localStorage.setItem('userRole', userRole);
+    
+            // Redirect based on user role
             switch (userRole) {
                 case 'admin':
-                    navigate('/admin/dashboard'); // Redirect to Admin Dashboard
+                    navigate('/admin/dashboard');
                     break;
                 case 'user':
-                    navigate('/user/dashboard'); // Navigate to User Post Creation
+                    navigate('/user/dashboard');
                     break;
                 case 'restaurant':
-                    navigate('/restaurant/dashboard'); // Navigate to User Post Creation
+                    navigate('/restaurant/dashboard');
                     break;
                 default:
                     console.error('Unknown role');
                     setError('Invalid role');
             }
-    
-            setError(''); // Reset error after a successful login
         } catch (err) {
             console.error('Login failed', err.response ? err.response.data.message : err);
             setError(err.response ? err.response.data.message : 'An error occurred');
         }
     };
+    
     
 
     return (

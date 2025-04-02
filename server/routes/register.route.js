@@ -3,16 +3,39 @@ const User = require('../Database/models/user');  // Assuming the User model is 
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
+// POST /api/register
 router.post('/', async (req, res) => {
     try {
-        const { name, email, password, age } = req.body;
+        const { name, email, password } = req.body;
+
+        // Basic validation
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                status: 'failed',
+                message: 'All fields are required'
+            });
+        }
+
+        // Validate email format (basic)
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                status: 'failed',
+                message: 'Invalid email format'
+            });
+        }
 
         // Hash the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Create a new user with the hashed password
-        const user = new User({ name, email, password: hashedPassword, age });
+        // Create a new user with the hashed password and default role
+        const user = new User({
+            name,
+            email,
+            password: hashedPassword,
+            role: 'user' // Set the default role as 'user'
+        });
 
         // Save the user to the database
         await user.save();
@@ -28,7 +51,7 @@ router.post('/', async (req, res) => {
         let errorMessage;
 
         if (err.code === 11000) {
-            // Handle duplicate key error
+            // Handle duplicate key error (email)
             errorMessage = 'Email already exists';
         } else if (err.name === 'ValidationError') {
             // Handle Mongoose validation error
