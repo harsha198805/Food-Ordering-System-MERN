@@ -41,7 +41,7 @@ const FilterSelect = styled.select`
 
 const FoodGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);  /* 4 columns */
+  grid-template-columns: repeat(4, 1fr); /* 4 columns */
   gap: 1.5rem;
 `;
 
@@ -120,6 +120,7 @@ const ItemPage = () => {
   const [cart, setCart] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
     const fetchFoodItems = async () => {
@@ -136,32 +137,45 @@ const ItemPage = () => {
 
   const addToCart = (item) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem._id === item._id);
+      const existingItem = prevCart.find(
+        (cartItem) => cartItem._id === item._id
+      );
       if (existingItem) {
         return prevCart.map((cartItem) =>
-          cartItem._id === item._id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+          cartItem._id === item._id
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            : cartItem
         );
       } else {
         return [...prevCart, { ...item, quantity: 1 }];
       }
     });
+    if (!showCart) {
+      setShowCart(true);
+    }
   };
 
   const removeFromCart = (itemId) => {
     setCart((prevCart) => prevCart.filter((item) => item._id !== itemId));
+    if (cart.length <= 1) {
+      setShowCart(false);
+    }
   };
 
   const filteredItems = foodItems.filter((item) => {
-    const matchesCategory = categoryFilter === "" || item.category === categoryFilter;
-    const matchesSearchTerm = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "" || item.category === categoryFilter;
+    const matchesSearchTerm = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearchTerm;
   });
 
   const navigate = useNavigate();
-const goToCheckout = () => {
-  // Navigate to the Checkout page, passing the cart as state
-  navigate("/checkout", { state: { cart } });
-};
+  const goToCheckout = () => {
+    // Navigate to the Checkout page, passing the cart as state
+    navigate("/checkout", { state: { cart } });
+  };
 
   return (
     <HomePageContainer>
@@ -169,7 +183,10 @@ const goToCheckout = () => {
 
       {/* Filters */}
       <FilterContainer>
-        <FilterSelect value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+        <FilterSelect
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
           <option value="">All Categories</option>
           <option value="Kottu">Kottu</option>
           <option value="Hoppers">Hoppers</option>
@@ -199,35 +216,46 @@ const goToCheckout = () => {
       </FilterContainer>
 
       {/* Cart Section */}
-      <CartContainer>
-        <h3>Cart</h3>
-        {cart.length > 0 ? (
-          cart.map((item) => (
-            <CartItem key={item._id}>
-              <span>{item.name} ({item.quantity})</span>
-              <button onClick={() => removeFromCart(item._id)}>Remove</button>
-            </CartItem>
-          ))
-        ) : (
-          <p>Cart is empty</p>
-        )}
-
-<CheckoutButton onClick={goToCheckout}>Proceed to Checkout</CheckoutButton>
-      </CartContainer>
-
+      {showCart && (
+        <CartContainer show={showCart}>
+          <h3>Cart</h3>
+          {cart.length > 0 ? (
+            cart.map((item) => (
+              <CartItem key={item._id}>
+                <span>
+                  {item.name} ({item.quantity})
+                </span>
+                <button onClick={() => removeFromCart(item._id)}>Remove</button>
+              </CartItem>
+            ))
+          ) : (
+            <p>Cart is empty</p>
+          )}
+          <CheckoutButton onClick={goToCheckout}>
+            Proceed to Checkout
+          </CheckoutButton>
+        </CartContainer>
+      )}
       {/* Food Items Grid */}
       <FoodGrid>
         {filteredItems.length > 0 ? (
           filteredItems.map((item) => (
             <FoodItem key={item._id}>
-              <FoodImage src={`http://localhost:5000${item.image}`} alt={item.name} />
+              <FoodImage
+                src={`http://localhost:5000${item.image}`}
+                alt={item.name}
+              />
               <h3>{item.name}</h3>
               <p>${item.price}</p>
-              <OrderButton onClick={() => addToCart(item)}>Add to Cart</OrderButton>
+              <OrderButton onClick={() => addToCart(item)}>
+                Add to Cart
+              </OrderButton>
             </FoodItem>
           ))
         ) : (
-          <NoResultsMessage>No food items found matching your criteria.</NoResultsMessage>
+          <NoResultsMessage>
+            No food items found matching your criteria.
+          </NoResultsMessage>
         )}
       </FoodGrid>
     </HomePageContainer>
