@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 
 // Stripe public key
@@ -75,73 +75,68 @@ const CheckoutButton = styled.button`
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const [cart, setCart] = useState(location.state?.cart || []);
+  const [cart, setCart] = useState([]);
 
-  // Check if the user is logged in
-  const isLoggedIn = localStorage.getItem("authToken");  // Example using localStorage to check if the user is logged in
-
+  // Load cart from localStorage when the component mounts
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/register");  // Redirect to register page if user is not logged in
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+      setCart(JSON.parse(storedCart));
     }
-  }, [isLoggedIn, navigate]);
+  }, []);
 
   // Update item quantity
   const updateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return; // Prevent setting quantity to 0 or negative
-    const updatedCart = cart.map(item => 
+    const updatedCart = cart.map(item =>
       item._id === itemId ? { ...item, quantity: newQuantity } : item
     );
     setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save updated cart to localStorage
   };
 
   // Remove item from cart
   const removeItem = (itemId) => {
     const updatedCart = cart.filter(item => item._id !== itemId);
     setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save updated cart to localStorage
   };
 
   // Calculate total amount
   const totalAmount = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
   const handleCheckout = async () => {
+    const authToken = localStorage.getItem("authToken");
+
+    if (!authToken) {
+      localStorage.setItem("redirectAfterLogin", "/checkout"); // Store redirect URL
+      navigate("/register");
+      return;
+    }
+
     setLoading(true);
     try {
-        const customerDetails = { name: "John Doe", email: "john@example.com" };
+      const response = await axios.post(
+        "http://localhost:5000/api/payments/create-checkout-session",
+        {
+          items: cart,
+          totalAmount,
+        },
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
 
-        const response = await axios.post("http://localhost:5000/api/payments/create-checkout-session", {
-            items: cart,
-            totalAmount,
-            customerDetails, // Include customer details
-        });
       const { sessionId } = response.data;
       const stripe = await stripePromise;
       const { error } = await stripe.redirectToCheckout({ sessionId });
 
-      // After successful payment, save the order details
       if (!error) {
-        // Assuming you have customer info available in your app, like name, email, etc.
-        const customerDetails = { name: "John Doe", email: "john@example.com" };
-
-        // Save the order and payment details to the database
-        await axios.post('http://localhost:5000/api/payments/save-order', {
-          items: cart,
-          paymentDetails: {
-            paymentMethod: 'Stripe',
-            status: 'Success',
-            transactionId: sessionId,
-          },
-          customerDetails: customerDetails,
-          totalAmount: totalAmount,
-        });
-
-        // Redirect to a confirmation page or home
-        navigate('/confirmation');
+        navigate("/confirmation");
       }
     } catch (error) {
-      console.error('Error during checkout:', error.response ? error.response.data : error);
+      console.error("Error during checkout:", error.response?.data || error);
       setLoading(false);
     }
   };
@@ -171,13 +166,18 @@ const CheckoutPage = () => {
                       <span>{item.name}</span>
                     </CartTableCell>
                     <CartTableCell>
-                      <CartItemImage src={`http://localhost:5000${item.image}`} alt={item.name} />
+                      <CartItemImage
+                        src={`http://localhost:5000${item.image}`}
+                        alt={item.name}
+                      />
                     </CartTableCell>
                     <CartTableCell>
                       <CartItemQuantity
                         type="number"
                         value={item.quantity}
-                        onChange={(e) => updateQuantity(item._id, parseInt(e.target.value))}
+                        onChange={(e) =>
+                          updateQuantity(item._id, parseInt(e.target.value))
+                        }
                       />
                     </CartTableCell>
                     <CartTableCell>${item.price * item.quantity}</CartTableCell>

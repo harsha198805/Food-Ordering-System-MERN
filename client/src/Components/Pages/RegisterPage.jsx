@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios"; // Make sure Axios is installed
+import { useNavigate } from "react-router-dom";
 
 const RegistrationContainer = styled.div`
   display: flex;
@@ -59,6 +60,8 @@ const RegistrationPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();  // ✅ Initialize navigate
+
 
   useEffect(() => {
     console.log("Registration page loaded");
@@ -96,22 +99,31 @@ const RegistrationPage = () => {
     setError("");
 
     try {
-      // Send the registration data to the backend
+      // Send registration request
       const response = await axios.post("http://localhost:5000/register", {
         name,
         email,
         password,
       });
 
-      if (response.data.msg === "User registered successfully") {
-        alert(`Registration successful with email: ${email}`);
-        // Redirect to login or homepage if necessary
+      if (response.data.status === "success") {
+       // alert(`Registration successful with email: ${email}`);
+
+        // Save auth token
+        localStorage.setItem("authToken", response.data.token);
+        
+        // Retrieve redirect URL (if available), else go to home page
+        const redirectTo = localStorage.getItem("redirectAfterLogin") || "/";
+        localStorage.removeItem("redirectAfterLogin"); // Clear stored redirect
+
+        navigate(redirectTo);
       }
     } catch (err) {
       console.error("Error registering user:", err.response ? err.response.data : err);
       setError("Registration failed, please try again");
     }
-  };
+};
+
 
   return (
     <RegistrationContainer>

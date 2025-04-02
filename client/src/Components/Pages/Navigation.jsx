@@ -28,6 +28,7 @@ function Navigation() {
     // Perform logout action (clear tokens, session data, etc.)
     localStorage.removeItem('authToken'); // Example: removing the token from localStorage
     localStorage.removeItem('userRole'); // Example: removing the token from localStorage
+    localStorage.removeItem('cart'); // Example: removing the token from localStorage
     console.log('Logged out successfully');
 
     // Redirect to login page after logout

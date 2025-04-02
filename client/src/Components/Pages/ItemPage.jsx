@@ -177,6 +177,21 @@ const ItemPage = () => {
     navigate("/checkout", { state: { cart } });
   };
 
+  useEffect(() => {
+    // Retrieve cart from localStorage on page load
+    const savedCart = JSON.parse(localStorage.getItem("cart"));
+    if (savedCart) {
+      setCart(savedCart);
+    }
+  }, []);
+  
+  useEffect(() => {
+    // Save the cart to localStorage whenever it changes
+    if (cart.length > 0) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart]);
+
   return (
     <HomePageContainer>
       <HomeTitle>Popular Dishes</HomeTitle>
