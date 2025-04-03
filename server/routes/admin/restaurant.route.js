@@ -1,6 +1,16 @@
 const express = require('express');
+const multer = require('multer');
 const Restaurant = require('../../Database/models/Restaurant');
 const router = express.Router();
+
+// Multer storage configuration to store images in the 'uploadsResturants' folder
+const storage = multer.diskStorage({
+  destination: './uploadsResturants',
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+});
+
+// Initialize multer with storage configuration
+const upload = multer({ storage });
 
 // Get all restaurants
 router.get('/', async (req, res) => {
@@ -23,8 +33,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create a new restaurant
-router.post('/', async (req, res) => {
+// Create a new restaurant with image upload
+router.post('/', upload.single('image'), async (req, res) => {
     const { name, location, cuisine, email, password, phone, address } = req.body;
 
     // Validation check for required fields
@@ -32,14 +42,18 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Handle image file if uploaded
+    const image = req.file ? `/uploadsResturants/${req.file.filename}` : '';
+
     const restaurant = new Restaurant({
         name,
         location,
         cuisine,
         email,
-        password, // You may want to hash the password before saving it
+        password, // Hash the password before saving it
         phone,
-        address
+        address,
+        image, // Add image URL to the restaurant object
     });
 
     try {
@@ -50,19 +64,25 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update a restaurant
-router.put('/:id', async (req, res) => {
+// Update a restaurant with image upload
+router.put('/:id', upload.single('image'), async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
 
+        // Update fields based on the incoming request
         restaurant.name = req.body.name || restaurant.name;
         restaurant.location = req.body.location || restaurant.location;
         restaurant.cuisine = req.body.cuisine || restaurant.cuisine;
         restaurant.email = req.body.email || restaurant.email;
-        restaurant.password = req.body.password || restaurant.password; // You may want to hash the password before saving it
+        restaurant.password = req.body.password || restaurant.password; // Hash the password before saving it
         restaurant.phone = req.body.phone || restaurant.phone;
         restaurant.address = req.body.address || restaurant.address;
+
+        // If an image file is uploaded, update the image field
+        if (req.file) {
+            restaurant.image = `/uploadsResturants/${req.file.filename}`;
+        }
 
         const updatedRestaurant = await restaurant.save();
         res.json(updatedRestaurant);

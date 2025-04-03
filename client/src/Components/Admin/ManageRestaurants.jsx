@@ -44,7 +44,8 @@ const ManageRestaurants = () => {
     email: '',
     password: '',
     phone: '',
-    address: ''
+    address: '',
+    image: null, // Added image field
   });
 
   const [errors, setErrors] = useState({
@@ -54,7 +55,8 @@ const ManageRestaurants = () => {
     email: '',
     password: '',
     phone: '',
-    address: ''
+    address: '',
+    image: '', // Added image error handling
   });
 
   useEffect(() => {
@@ -74,13 +76,18 @@ const ManageRestaurants = () => {
   const handleClose = () => {
     setOpen(false);
     setEditMode(false);
-    setFormData({ name: '', location: '', cuisine: '', email: '', password: '', phone: '', address: '' });
+    setFormData({ name: '', location: '', cuisine: '', email: '', password: '', phone: '', address: '', image: null });
     setSelectedRestaurant(null);
     setErrors({});
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setFormData({ ...formData, [name]: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const validateForm = () => {
@@ -93,17 +100,29 @@ const ManageRestaurants = () => {
     if (!formData.phone) newErrors.phone = 'Phone is required';
     if (!formData.address) newErrors.address = 'Address is required';
     if (!formData.password) newErrors.password = 'Password is required';
+    if (!formData.image) newErrors.image = 'Image is required'; // Check if image is selected
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Returns true if no errors
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) return; // Stop if form is invalid
+
+    const form = new FormData();
+    form.append('name', formData.name);
+    form.append('location', formData.location);
+    form.append('cuisine', formData.cuisine);
+    form.append('email', formData.email);
+    form.append('password', formData.password);
+    form.append('phone', formData.phone);
+    form.append('address', formData.address);
+    if (formData.image) form.append('image', formData.image); // Append image to FormData
+
     try {
       if (editMode) {
-        await axios.put(`http://localhost:5000/restaurants/${selectedRestaurant._id}`, formData);
+        await axios.put(`http://localhost:5000/restaurants/${selectedRestaurant._id}`, form);
       } else {
-        await axios.post('http://localhost:5000/restaurants', formData);
+        await axios.post('http://localhost:5000/restaurants', form);
       }
       fetchRestaurants();
       handleClose();
@@ -122,7 +141,8 @@ const ManageRestaurants = () => {
       email: restaurant.email || '',
       password: '',
       phone: restaurant.phone || '',
-      address: restaurant.address || ''
+      address: restaurant.address || '',
+      image: null, // Reset image when editing
     });
     handleOpen();
   };
@@ -154,6 +174,7 @@ const ManageRestaurants = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <StyledTableCell>Image</StyledTableCell>
               <StyledTableCell>Name</StyledTableCell>
               <StyledTableCell>Email</StyledTableCell>
               <StyledTableCell>Phone</StyledTableCell>
@@ -165,6 +186,7 @@ const ManageRestaurants = () => {
           <TableBody>
             {restaurants.map((restaurant) => (
               <TableRow key={restaurant._id}>
+                <StyledTableCell> <img src={`http://localhost:5000${restaurant.image}`} alt={restaurant.name} width="50" /></StyledTableCell>
                 <StyledTableCell>{restaurant.name}</StyledTableCell>
                 <StyledTableCell>{restaurant.email}</StyledTableCell>
                 <StyledTableCell>{restaurant.phone}</StyledTableCell>
@@ -268,6 +290,14 @@ const ManageRestaurants = () => {
             error={!!errors.password}
             helperText={errors.password}
           />
+          {/* Image Upload */}
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleChange}
+          />
+          {errors.image && <FormHelperText error>{errors.image}</FormHelperText>}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary">Cancel</Button>

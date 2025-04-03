@@ -1,6 +1,6 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, Button } from '@mui/material';
-import styled from 'styled-components';
+import { NavLink, useNavigate } from "react-router-dom";
+import { AppBar, Toolbar, Button } from "@mui/material";
+import styled from "styled-components";
 
 const StyledLink = styled(NavLink)`
   color: white;
@@ -25,18 +25,19 @@ function Navigation() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Perform logout action (clear tokens, session data, etc.)
-    localStorage.removeItem('authToken'); // Example: removing the token from localStorage
-    localStorage.removeItem('userRole'); // Example: removing the token from localStorage
-    localStorage.removeItem('cart'); // Example: removing the token from localStorage
-    console.log('Logged out successfully');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("cart");
+    console.log("Logged out successfully");
 
-    // Redirect to login page after logout
-    navigate('/login');
+    navigate("/login");
   };
 
-  // Check if the user is logged in by verifying the token in localStorage
-  const isLoggedIn = localStorage.getItem('authToken');
+  const isLoggedIn = localStorage.getItem("authToken");
+  const userRole = localStorage.getItem("userRole"); // Retrieve user role
+
+  const isAdmin = userRole === "admin";
+  const isRestaurantOwner = userRole === "restaurant_owner";
 
   return (
     <StyledAppBar position="static">
@@ -44,27 +45,44 @@ function Navigation() {
         <StyledLink exact to="/" activeClassName="active">
           <Button color="inherit">Home</Button>
         </StyledLink>
-        <StyledLink to="/login" activeClassName="active">
-          <Button color="inherit">Login</Button>
+        <StyledLink to="/restaurants" activeClassName="active">
+          <Button color="inherit">Restaurants</Button>
         </StyledLink>
-        <StyledLink to="/register" activeClassName="active">
-          <Button color="inherit">Register</Button>
+        <StyledLink to="/cart" activeClassName="active">
+          <Button color="inherit">Cart</Button>
         </StyledLink>
-        <StyledLink to="/usenavigate" activeClassName="active">
-          <Button color="inherit">UseNavigate</Button>
-        </StyledLink>
-        <StyledLink to="/params/123" activeClassName="active">
-          <Button color="inherit">Params</Button>
-        </StyledLink>
-        <StyledLink to="/more-info" activeClassName="active">
-          <Button color="inherit">More Info</Button>
-        </StyledLink>
-
-        {/* Conditionally render Logout button based on user login state */}
         {isLoggedIn && (
-          <Button color="inherit" onClick={handleLogout}>
-            Logout
-          </Button>
+          <>
+            <StyledLink to="/orders" activeClassName="active">
+              <Button color="inherit">Orders</Button>
+            </StyledLink>
+            <StyledLink to="/profile" activeClassName="active">
+              <Button color="inherit">Profile</Button>
+            </StyledLink>
+            {isAdmin && (
+              <StyledLink to="/admin" activeClassName="active">
+                <Button color="inherit">Admin</Button>
+              </StyledLink>
+            )}
+            {isRestaurantOwner && (
+              <StyledLink to="/owner-dashboard" activeClassName="active">
+                <Button color="inherit">Owner Dashboard</Button>
+              </StyledLink>
+            )}
+            <Button color="inherit" onClick={handleLogout}>
+              Logout
+            </Button>
+          </>
+        )}
+        {!isLoggedIn && (
+          <>
+            <StyledLink to="/login" activeClassName="active">
+              <Button color="inherit">Login</Button>
+            </StyledLink>
+            <StyledLink to="/register" activeClassName="active">
+              <Button color="inherit">Register</Button>
+            </StyledLink>
+          </>
         )}
       </Toolbar>
     </StyledAppBar>

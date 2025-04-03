@@ -20,6 +20,7 @@ const getMessageAuthenticateRoute = require('./routes/getmessageauthenticate.rou
 const getUserMessageRoute = require('./routes/getmessageofuser.route.js');
 
 const restaurantRoute = require('./routes/admin/restaurant.route');
+const restaurantRouteList = require('./routes/restaurant.route');
 const adminRoute = require('./routes/admin.route');
 const foodItemRoute = require('./routes/admin/fooditem.route'); 
 const orderRoutes = require("./routes/orderRoutes");
@@ -57,6 +58,8 @@ app.use('/food-items', foodItemRoute);
 
 app.use('/admin', adminRoute);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploadsResturants', express.static(path.join(__dirname, 'uploadsResturants')));
 
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes); // Payment routes now handle `/create-checkout-session`
+app.use('/api/restaurants', restaurantRouteList);

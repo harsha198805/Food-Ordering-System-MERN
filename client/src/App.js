@@ -36,6 +36,8 @@ import CheckoutPage from "./Components/Pages/CheckoutPage";
 import SuccessPage from "./Components/Pages/SuccessPage";
 import CancelPage from "./Components/Pages/CancelPage";
 import ConfirmationPage from "./Components/Pages/ConfirmationPage";
+import Restaurants from "./Components/Pages/Restaurants";
+import RestaurantList from "./Components/Pages/RestaurantList";
 
 function App() {
   return (
@@ -50,6 +52,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/usenavigate" element={<UseNavigatePage />} />
+
+          <Route path="/restaurants" element={<RestaurantList />} />
           <Route path="/params/:id" element={<ParamsPage />} />
           <Route path="/more-info" element={<MoreInfo />}>
             <Route path="about-us" element={<AboutUs />} />
