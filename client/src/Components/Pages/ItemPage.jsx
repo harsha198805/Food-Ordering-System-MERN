@@ -194,7 +194,7 @@ const ItemPage = () => {
 
   return (
     <HomePageContainer>
-      <HomeTitle>Popular Dishes</HomeTitle>
+      <HomeTitle>Find Food</HomeTitle>
 
       {/* Filters */}
       <FilterContainer>
